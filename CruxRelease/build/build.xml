@@ -1,257 +1,173 @@
 <project default="dist" name="CruxRelease" basedir="../">
 
-	<property file="build/version.properties" />
+	<property name="crux.dir" value="../Crux" />
+	<property file="${crux.dir}/build/version.properties" />
 
-	<property name="srcdir" value="src" />
-	<property name="distdir" value="dist" />
-	<property name="expandeddir" value="dist/crux-${version}" />
-	<property name="resourcedir" value="resource" />
-	<property name="projectconfig" value="test/project.properties" />
-	<property name="cmdfile" value="test/projectGenerator.cmd" />
-	<property name="shfile" value="test/projectGenerator.sh" />
-	<property name="launchershfile" value="test/start.sh" />
-	<property name="launchercmdfile" value="test/start.cmd" />
-	<property name="final.name" value="crux-project-generator" />
-	<property name="war.name" value="quickstart" />
-	<property name="xsd.dir" value="xsd" />
+	<property name="src.dir" value="src" />
+	<property name="dist.dir" value="dist" />
+	<property name="expanded.dir" value="${dist.dir}/crux-${version}" />
 	
-	<property name="temp.dir" value="${distdir}/temp" />
-	<property name="web.root" value="war" />
-	<property name="web.inf.dir" value="${web.root}/WEB-INF" />
-	<property name="web.lib.dir" value="${web.inf.dir}/lib" />
-	<property name="target.classes.dir" value="${web.inf.dir}/classes" />
+	<property name="temp.dir" value="${dist.dir}/temp" />
+	<property name="resource.dir" value="resource" />
+	<property name="samples.dir" value="${resource.dir}/samples" />
 
-	<property name="crux-srcdir" value="../Crux/src" />
-	<property name="crux-compiler-srcdir" value="../CruxCompiler/src" />
-	<property name="crux-gwt-widgets-srcdir" value="../CruxGWTWidgets/src" />
-	<property name="crux-modules-srcdir" value="../CruxModules/src" />
-	<property name="crux-modules-compiler-srcdir" value="../CruxModulesCompiler/src" />
-	<property name="crux-scannotation-srcdir" value="../CruxScannotation/src" />
-	<property name="crux-widgets-srcdir" value="../CruxWidgets/src" />
-
-	<property name="crux.dist" value="../Crux/dist" />
-	<property name="crux.gwt.dist" value="../CruxGWTWidgets/dist" />
-	<property name="crux.widgets.dist" value="../CruxWidgets/dist" />
-	<property name="crux.compiler.dist" value="../CruxCompiler/dist" />
-	<property name="crux.themes.dist" value="../CruxThemes/dist" />
-	<property name="crux.scannotation.dist" value="../CruxScannotation/dist" />
-	<property name="crux.modules.dist" value="../CruxModules/dist" />
-	<property name="crux.modules.compiler.dist" value="../CruxModulesCompiler/dist" />
-
-	<property name="crux.samples.dir" value="samples" />
+	<!-- Proporties refering Crux Project -->
+	<property name="crux.lib.dir" value="${crux.dir}/lib" />
+	<property name="crux.dist.dir" value="${crux.dir}/dist" />
+	<property name="crux.build.dir" value="${crux.dir}/build" />
+	<property name="crux.dependencies.dir" value="${crux.build.dir}/dependencies" />
+	<property name="crux.resource.dir" value="${crux.build.dir}/resource/projectgen" />
+	<property name="project.config" value="${crux.resource.dir}/project.properties" />
+	<property name="cmd.file" value="${crux.resource.dir}/projectGenerator.cmd" />
+	<property name="sh.file" value="${crux.resource.dir}/projectGenerator.sh" />
+	<property name="launcher.sh.file" value="${crux.resource.dir}/start.sh" />
+	<property name="launcher.cmd.file" value="${crux.resource.dir}/start.cmd" />
+	<property name="crux.dev.name" value="crux-dev" />
+	<property name="crux.runtime.name" value="crux-runtime" />
+	<property name="crux.gadgets.name" value="crux-gadgets" />
+	<property name="crux.widgets.name" value="crux-widgets" />
+	<property name="crux.themes.name" value="crux-themes" />
 	
-	<property name="crux.libs" value="../CruxLibs/crux" />
-	<property name="crux.dependencies" value="../CruxLibs/dependencies" />
-
-	<path id="build.classpath">
-		<fileset dir="${web.lib.dir}">
-			<include name="**/*.jar" />
-		</fileset>
-		<fileset dir="${resourcedir}/jars">
-			<include name="**/*.jar" />
-		</fileset>
-	</path>
-
-	<taskdef resource="br/com/sysmap/crux/tools/crux-module-tools.xml">
-		<classpath>
-			<path refid="build.classpath" />
-		</classpath>
-	</taskdef>
-
-	<!-- 
-	========================================================================================================
-		Generates Schemas
-	========================================================================================================
-	-->
-	<target name="generate-schemas">
-		<generateSchemas outputDir="${xsd.dir}">
-			<classpath>
-				<path refid="build.classpath" />
-				<pathelement path="${target.classes.dir}" />
-				<pathelement path="${web.root}" />
-				<pathelement location="${src.dir}" />
-			</classpath>
-		</generateSchemas>
-	</target>
-
-	<!-- 
-	========================================================================================================
-		Generates the war for distribution
-	========================================================================================================
-	-->
-	<target name="export-war">
-		<!-- compiling -->
-		<delete dir="${target.classes.dir}" failonerror="no" includeemptydirs="true" />
-		<mkdir dir="${target.classes.dir}" />
-		<javac destdir="${target.classes.dir}" deprecation="true" target="1.5" source="1.5" debug="true" optimize="false" excludes="**/public/*" 
-			encoding="UTF-8">
-			<src>
-				<pathelement location="${srcdir}" />
-			</src>
-			<classpath refid="build.classpath" />
-		</javac>
-
-		<!-- building war-->
-		<delete dir="${temp.dir}" failonerror="no" includeemptydirs="yes" includes="**/*" />
-		<mkdir dir="${temp.dir}" />
-
-		<copydir dest="${temp.dir}/webroot" src="${web.root}">
-			<exclude name="**/*.jar" />
-		</copydir>
-		
-		<copydir dest="${temp.dir}/webroot/WEB-INF/classes" src="build">
-			<include name="version.properties" />
-		</copydir>
-
-		<cruxmodulecompiler srcDir="${srcdir}" outputDir="${temp.dir}/webroot" webDir="${temp.dir}/webroot" 
-            keepPagesGeneratedFiles="true" pagesOutputDir="${temp.dir}/webroot" indentPages="false">
-			<classpath>
-				<fileset dir="${web.lib.dir}">
-					<include name="**/*.jar" />
-				</fileset>
-				<fileset dir="${resourcedir}/jars/lib/build">
-					<include name="**/*.jar" />
-				</fileset>
-			</classpath>
-			<jvmarg value="-Xmx768M" />
-			<jvmarg value="-Xms256M" />
-			<!--jvmarg value="-Xdebug" />
-			<jvmarg value="-Xrunjdwp:transport=dt_socket,address=3331,server=y,suspend=y" /-->
-			
-		</cruxmodulecompiler>
-		<delete>
-			<fileset dir="${temp.dir}/webroot">
-				<include name="**/*.crux.xml"/>
-				<include name="**/*.template.xml"/>
-			</fileset>
-		</delete>
-		
-		<blockremove beginmarker="&lt;!--antReplacementBlockBegin--&gt;" endmarker="&lt;!--antReplacementBlockEnd--&gt;" file="${temp.dir}/webroot/WEB-INF/web.xml" />
-
-		<move todir="${temp.dir}/${war.name}.war">
-			<fileset dir="${temp.dir}/webroot" />
-		</move>
-		
-		<move file="${temp.dir}/${war.name}.war" tofile="${expandeddir}/apps/${war.name}.war" />
-		<delete dir="${temp.dir}" failonerror="no" includeemptydirs="yes" />
-	</target>
+	<!-- Proporties refering Quickstart Project -->
+	<property name="quickstart.dir" value="../CruxQuickstart" />
+	<property name="quickstart.build.dir" value="${quickstart.dir}/build" />
+	<property name="quickstart.dist.dir" value="${quickstart.dir}/dist" />
+	<property name="quickstart.webinf.dir" value="${quickstart.dir}/war/WEB-INF" />
 	
-	<!-- 
-	========================================================================================================
-		Compile
-	========================================================================================================
-	-->
-	<target name="fast-compile-scripts">
-		<cruxmodulecompiler srcDir="${srcdir}" outputDir="${web.root}" 
-			keepPagesGeneratedFiles="true" pagesOutputDir="${web.root}">
-			<classpath>
-				<fileset dir="${web.lib.dir}">
-					<include name="**/*.jar" />
-				</fileset>
-				<fileset dir="${resourcedir}/jars/lib/build">
-					<include name="**/*.jar" />
-				</fileset>
-				<pathelement path="${web.root}" />
-				<pathelement path="${target.classes.dir}" />
-			</classpath>
+	<!-- Proporties refering Showcase Project -->
+	<property name="showcase.dir" value="../CruxShowcase" />
+	<property name="showcase.build.dir" value="${showcase.dir}/build" />
+	<property name="showcase.webinf.dir" value="${showcase.dir}/war/WEB-INF" />
 
-			<jvmarg value="-Xmx768M" />
-			<jvmarg value="-Xms256M" />
-			
-			<arg value="-draftCompile" />
-			<arg value="-style" />
-			<arg value="Detailed" />
-			<arg value="-gen" />
-			<arg value="generated" />
-		</cruxmodulecompiler>
-	</target>
+	<!--get src="http:/repoGesse/crux-dev-deps.jar" dest="${lib.dir}/crux-dev-deps.jar" verbose="true" usetimestamp="yes"/>
+	<get src="http:/repoGesse/gwt-servlet.jar" dest="${dependencies.dir}/gwt-servlet.jar" verbose="true" usetimestamp="yes"/>
+	<get src="http:/repoGesse/gwt-servlet-deps.jar" dest="${dependencies.dir}/gwt-servlet-deps.jar" verbose="true" usetimestamp="yes"/>
+	<get src="http:/repoGesse/crux-runtime-deps.jar" dest="${dependencies.dir}/crux-runtime-deps.jar" verbose="true" usetimestamp="yes"/-->
 	
-	<!-- 
-	========================================================================================================
-		GenerateJavadoc
-	========================================================================================================
-	-->
-	<target name="generate-javadoc">
-		<javadoc encoding="UTF-8" destdir="${expandeddir}/docs" protected="true" source="1.5" classpathref="build.classpath">
-			<fileset dir="${crux-srcdir}" />
-			<fileset dir="${crux-compiler-srcdir}" />
-			<fileset dir="${crux-gwt-widgets-srcdir}" />
-			<fileset dir="${crux-modules-srcdir}" />
-			<fileset dir="${crux-modules-compiler-srcdir}" />
-			<fileset dir="${crux-scannotation-srcdir}" />
-			<fileset dir="${crux-widgets-srcdir}" />
-		</javadoc>
-	</target>
-
 	<!-- 
 	========================================================================================================
 		Dist
 	========================================================================================================
 	-->
 	<target name="dist" >
-		<!-- exporting -->
-		<delete dir="${expandeddir}" failonerror="no" includeemptydirs="true" />
-		<mkdir dir="${expandeddir}/tools" />
+		<delete dir="${dist.dir}" failonerror="no" includeemptydirs="true" />
+		<mkdir dir="${expanded.dir}" />
+
+		<!-- Run Crux distribution tasks -->
+		<ant inheritall="false" target="dist" antfile="${crux.build.dir}/build.xml"/>
+		<ant inheritall="false" target="generate-javadoc" antfile="${crux.build.dir}/build.xml" />
+		<copy todir="${expanded.dir}/docs">
+			<fileset dir="${crux.dist.dir}/docs" includes="**/*"/>
+		</copy>	
+		<antcall target="update-applications-jars" />
 		
-		<copy todir="${resourcedir}/jars/lib/web-inf">
-			<fileset dir="${crux.dist}" includes="*.jar" />
-			<fileset dir="${crux.gwt.dist}" includes="*.jar" />
-			<fileset dir="${crux.widgets.dist}" includes="*.jar" />
-			<fileset dir="${crux.scannotation.dist}" includes="*.jar" />
-			<fileset dir="${crux.themes.dist}" includes="*.jar" />
-			<fileset file="${crux.dependencies}/commons-logging.jar"/>
-			<fileset file="${crux.dependencies}/gwt-servlet.jar"/>
-			<fileset file="${crux.dependencies}/javassist.jar"/>
-			<fileset file="${crux.dependencies}/saxon9.jar"/>
-			<fileset file="${crux.dependencies}/saxon9-dom.jar"/>
+		<!-- Copy all files to distribution folder -->
+		<copy todir="${expanded.dir}/lib/build">
+			<fileset dir="${crux.dist.dir}" >
+				<include name="${crux.dev.name}.jar" />				
+				<include name="${crux.widgets.name}.jar" />				
+				<include name="${crux.themes.name}.jar" />				
+			</fileset>
+			<fileset dir="${crux.lib.dir}" >
+				<include name="**/*.jar" />
+			</fileset>
 		</copy>
-		<copy todir="${resourcedir}/jars/lib/build">
-			<fileset dir="${crux.compiler.dist}" includes="*.jar" />
-			<fileset file="${crux.dependencies}/gwt-dev.jar"/>
-			<fileset file="${crux.dependencies}/gwt-ll.dll"/>
-			<fileset file="${crux.dependencies}/gwt-module.dtd"/>
-			<fileset file="${crux.dependencies}/gwt-user.jar"/>
+		<copy todir="${expanded.dir}/lib/web-inf">
+			<fileset dir="${crux.dist.dir}" >
+				<include name="${crux.runtime.name}.jar" />				
+			</fileset>
+			<fileset dir="${crux.dependencies.dir}" >
+				<include name="**/*.jar" />
+			</fileset>
 		</copy>
-		<copy todir="${resourcedir}/jars/lib/modules/build">
-			<fileset dir="${crux.modules.compiler.dist}" includes="*.jar" />
+		<copy todir="${expanded.dir}/lib/gadget">
+			<fileset dir="${crux.dist.dir}" >
+				<include name="${crux.gadgets.name}.jar" />				
+			</fileset>
 		</copy>
-		<copy todir="${resourcedir}/jars/lib/modules/web-inf">
-			<fileset dir="${crux.modules.dist}" includes="*.jar" />
-		</copy>
-		<copydir dest="${expandeddir}/lib/build" src="${resourcedir}/jars/lib/build" />
-		<copydir dest="${expandeddir}/lib/web-inf" src="${resourcedir}/jars/lib/web-inf" />
-		<copydir dest="${expandeddir}/lib/modules/build" src="${resourcedir}/jars/lib/modules/build" />
-		<copydir dest="${expandeddir}/lib/modules/web-inf" src="${resourcedir}/jars/lib/modules/web-inf" />
-
-		<copy todir="${expandeddir}" file="${projectconfig}" />
-		<copy todir="${expandeddir}" file="${cmdfile}" />
-		<copy todir="${expandeddir}" file="${shfile}" />
-		<copy todir="${expandeddir}" file="${launchershfile}" />
-		<copy todir="${expandeddir}" file="${launchercmdfile}" />
-
-		<exec command="chmod 755 ${expandeddir}/projectGenerator.sh" />
-		<exec command="chmod 755 ${expandeddir}/start.sh" />
- 
-		<copy todir="${expandeddir}">
-			<fileset dir="${resourcedir}/static" includes="*" />
-		</copy>
-
-		<antcall target="export-war" />
-		<copy todir="${expandeddir}/apps/helloworld.war">
-			<fileset dir="${crux.samples.dir}/helloworld.war" excludes="**/*.jar"/>
-		</copy>
-		<!--antcall target="generate-javadoc" /-->
 		
-		<jar jarfile="${expandeddir}/tools/${final.name}.jar">
-			<fileset dir="${target.classes.dir}" >
-				<include name="br/com/sysmap/crux/tools/projectgen/**/*.class" />
+		<copy todir="${expanded.dir}" file="${project.config}" />
+		<copy todir="${expanded.dir}" file="${cmd.file}" />
+		<copy todir="${expanded.dir}" file="${sh.file}" />
+		<copy todir="${expanded.dir}" file="${launcher.sh.file}" />
+		<copy todir="${expanded.dir}" file="${launcher.cmd.file}" />
+		
+		<exec command="chmod 755 ${expanded.dir}/projectGenerator.sh" />
+		<exec command="chmod 755 ${expanded.dir}/start.sh" />
+
+		<copy todir="${expanded.dir}">
+			<fileset dir="${resource.dir}/static" includes="*" />
+		</copy>
+
+		<!-- Add HelloWord sample application -->
+		<copy todir="${expanded.dir}/apps/helloworld.war">
+			<fileset dir="${samples.dir}/helloworld.war" excludes="**/*.jar"/>
+		</copy>	
+
+		<!-- Add Quickstart application -->
+		<ant inheritall="false" target="dist" antfile="${quickstart.build.dir}/build.xml"/>
+		<copy todir="${expanded.dir}/apps/quickstart.war">
+			<fileset dir="${quickstart.dist.dir}/quickstart.war" excludes="**/*.jar"/>
+		</copy>	
+
+		<!--zip basedir="${expanded.dir}" destfile="${distdir}/crux-${version}.zip" /-->
+	</target>
+	
+	<!-- 
+	========================================================================================================
+		Compile Crux and update apllications with new jars
+	========================================================================================================
+	-->
+	<target name="compile-update-applications-jars" >
+		<ant inheritall="false" target="dist" antfile="${crux.build.dir}/build.xml"/>
+		<antcall target="update-applications-jars" />
+	</target>
+	
+	
+	<!-- 
+	========================================================================================================
+		Update apllications with new jars
+	========================================================================================================
+	-->
+	<target name="update-applications-jars" >
+		<!-- Update Quickstart application -->
+		<copy todir="${quickstart.build.dir}/lib">
+			<fileset dir="${crux.dist.dir}" >
+				<include name="${crux.dev.name}.jar" />				
+				<include name="${crux.widgets.name}.jar" />				
+				<include name="${crux.themes.name}.jar" />				
 			</fileset>
-			<fileset dir="${srcdir}" >
-				<include name="br/com/sysmap/crux/tools/projectgen/**/*.java" />
-				<include name="templates/**/*" />
+			<fileset dir="${crux.lib.dir}" >
+				<include name="**/*.jar" />
 			</fileset>
-		</jar>
-		<!--zip basedir="${expandeddir}" destfile="${distdir}/crux-${version}.zip" /-->
-		<!--delete dir="${tempdir}" failonerror="no" includeemptydirs="true" /-->
+		</copy>
+		<copy todir="${quickstart.webinf.dir}/lib">
+			<fileset dir="${crux.dist.dir}" >
+				<include name="${crux.runtime.name}.jar" />				
+			</fileset>
+			<fileset dir="${crux.dependencies.dir}" >
+				<include name="**/*.jar" />
+			</fileset>
+		</copy>
+	
+		<!-- Update Showcase application -->
+		<copy todir="${showcase.build.dir}/lib">
+			<fileset dir="${crux.dist.dir}" >
+				<include name="${crux.dev.name}.jar" />				
+				<include name="${crux.widgets.name}.jar" />				
+				<include name="${crux.themes.name}.jar" />				
+			</fileset>
+			<fileset dir="${crux.lib.dir}" >
+				<include name="**/*.jar" />
+			</fileset>
+		</copy>
+		<copy todir="${showcase.webinf.dir}/lib">
+			<fileset dir="${crux.dist.dir}" >
+				<include name="${crux.runtime.name}.jar" />				
+			</fileset>
+			<fileset dir="${crux.dependencies.dir}" >
+				<include name="**/*.jar" />
+			</fileset>
+		</copy>
 	</target>
 </project>
