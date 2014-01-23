@@ -769,11 +769,11 @@ public abstract class WidgetCreator <C extends WidgetCreatorContext>
 						if (getWidgetCreator().isResourceReference(styleName))
 				        {
 				        	styleName = widgetCreator.getResourceAccessExpression(styleName);
-				        	addStyleName(out, context.getWidget(), styleName, i > 0);
+				        	addStyleName(out, context.getWidget(), styleName, true);
 				        }
 				        else
 				        {
-				        	addStyleName(out, context.getWidget(), EscapeUtils.quote(styleName), i > 0);
+				        	addStyleName(out, context.getWidget(), EscapeUtils.quote(styleName), true);
 				        }
 					}
 				} 

@@ -19,7 +19,7 @@ import org.cruxframework.crux.widgets.rebind.disposal.topmenudisposal.TopMenuDis
 
 /**
  * 
- * @author Gesse Dafe
+ * @author Thiago da Rosa de Bustamante
  *
  */
 @DeclarativeFactory(library="widgets", id="topMenuDisposal", targetWidget=TopMenuDisposal.class)
